@@ -47,14 +47,63 @@ std::shared_ptr<Node>& QuadTree<Node, Rectangle, Point>::search(Point target, st
 }
 
 template<typename Node, typename Rectangle, typename Point>
+std::vector<Point> QuadTree<Node, Rectangle, Point>::range(Rectangle region, std::shared_ptr<Node>& node){
+    if(node == nullptr)
+        return std::vector<Point>();
+    if(region.isInside(node->get_point())){
+        std::vector<Point> points = {node->get_point()};
+        auto pointsNW = range(region, node->NW());
+        auto pointsNE = range(region, node->NE());
+        auto pointsSW = range(region, node->SW());
+        auto pointsSE = range(region, node->SE());
+        points.insert(points.end(), pointsNW.begin(), pointsNW.end());
+        points.insert(points.end(), pointsNE.begin(), pointsNE.end());
+        points.insert(points.end(), pointsSW.begin(), pointsSW.end());
+        points.insert(points.end(), pointsSE.begin(), pointsSE.end());
+        return points;
+    }else{
+        const int x=0, y=1;
+        std::vector<Point> points;
+        if(node->get_point() < region._max){
+            auto pointsNE = range(region, node->NE());
+            points.insert(points.begin(), pointsNE.begin(), pointsNE.end());
+            if(region._min.get(x) < node->get_point().get(x)){
+                auto pointsNW = range(region, node->NW());
+                points.insert(points.begin(), pointsNW.begin(), pointsNW.end());
+            }else if(region._min.get(y) < node->get_point().get(y)){
+                auto pointsSE = range(region, node->SE());
+                points.insert(points.begin(), pointsSE.begin(), pointsSE.end());
+            }
+        }else if(region._max.get(x) < node->get_point().get(x)){
+            auto pointsNW = range(region, node->NW());
+            points.insert(points.begin(), pointsNW.begin(), pointsNW.end());
+            if(region._min.get(y) < node->get_point().get(y)){
+                auto pointsSW = range(region, node->SW());
+                points.insert(points.begin(), pointsSW.begin(), pointsSW.end());
+            }
+        }else if(region._min < node->get_point()){
+            auto pointsSW = range(region, node->SW());
+            points.insert(points.begin(), pointsSW.begin(), pointsSW.end());
+            if(node->get_point().get(x) < region._max.get(x)){
+                auto pointsSE = range(region, node->SE());
+                points.insert(points.begin(), pointsSE.begin(), pointsSE.end());
+            }
+        }else{
+            auto pointsSE = range(region, node->SE());
+            points.insert(points.begin(), pointsSE.begin(), pointsSE.end());
+        }
+        return points;
+    }
+}
+
+template<typename Node, typename Rectangle, typename Point>
 std::shared_ptr<Node> QuadTree<Node, Rectangle, Point>::search(Point target){
     return search(target, this->root);
 }
 
 template<typename Node, typename Rectangle, typename Point>
 std::vector<Point> QuadTree<Node, Rectangle, Point>::range(Rectangle region){
-    //TODO
-    return std::vector<Point>();
+    return range(region, this->root);
 }
 
 template<typename Node, typename Rectangle, typename Point>
