@@ -64,27 +64,28 @@ std::vector<Point> QuadTree<Node, Rectangle, Point>::range(Rectangle region, std
     }else{
         const int x=0, y=1;
         std::vector<Point> points;
-        if(node->get_point() < region._max){
+
+        if(node->get_point().get(x) <= region._max.get(x) && node->get_point().get(y) < region._max.get(y)){
             auto pointsNE = range(region, node->NE());
             points.insert(points.begin(), pointsNE.begin(), pointsNE.end());
             if(region._min.get(x) < node->get_point().get(x)){
                 auto pointsNW = range(region, node->NW());
                 points.insert(points.begin(), pointsNW.begin(), pointsNW.end());
-            }else if(region._min.get(y) < node->get_point().get(y)){
+            }else if(region._min.get(y) <= node->get_point().get(y)){
                 auto pointsSE = range(region, node->SE());
                 points.insert(points.begin(), pointsSE.begin(), pointsSE.end());
             }
-        }else if(region._max.get(x) < node->get_point().get(x)){
+        }else if(region._max.get(x) < node->get_point().get(x) && node->get_point().get(y) < region._max.get(y)){
             auto pointsNW = range(region, node->NW());
             points.insert(points.begin(), pointsNW.begin(), pointsNW.end());
-            if(region._min.get(y) < node->get_point().get(y)){
+            if(region._min.get(y) <= node->get_point().get(y)){
                 auto pointsSW = range(region, node->SW());
                 points.insert(points.begin(), pointsSW.begin(), pointsSW.end());
             }
         }else if(region._min < node->get_point()){
             auto pointsSW = range(region, node->SW());
             points.insert(points.begin(), pointsSW.begin(), pointsSW.end());
-            if(node->get_point().get(x) < region._max.get(x)){
+            if(node->get_point().get(x) <= region._max.get(x)){
                 auto pointsSE = range(region, node->SE());
                 points.insert(points.begin(), pointsSE.begin(), pointsSE.end());
             }
